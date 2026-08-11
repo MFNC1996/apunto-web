@@ -179,6 +179,81 @@
     font-size: 0.9rem;
   }
 
+  .buy-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .buy-form input {
+    font: inherit;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 14px;
+    text-align: left;
+  }
+
+  .buy-form input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .buy-error {
+    color: #e2697a;
+    font-size: 0.85rem;
+  }
+
+  .buy-note {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  .buy-success {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .buy-key-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .buy-key-row code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    color: var(--accent);
+  }
+
+  .link-button {
+    background: none;
+    border: none;
+    color: var(--text-faint);
+    font: inherit;
+    font-size: 0.82rem;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  .link-button:hover {
+    color: var(--text-muted);
+  }
+
+  .hidden {
+    display: none;
+  }
+
   .legal-text {
     color: var(--text-muted);
     font-size: 0.9rem;
@@ -252,6 +327,20 @@
       <div class="card pricing-card">
         <div class="price">$4.990 CLP <small>/ mes</small></div>
         <p class="pricing-note">30 días de prueba gratis (1 celular conectado a la vez). Con la suscripción, dispositivos ilimitados. Renovación automática, cancela cuando quieras.</p>
+        <form id="buy-form" class="buy-form">
+          <input type="email" id="buy-email" placeholder="tu@email.com" required />
+          <button type="submit" id="buy-submit" class="btn btn-primary">Comprar suscripción ahora</button>
+          <p id="buy-error" class="buy-error hidden"></p>
+        </form>
+        <div id="buy-success" class="buy-success hidden">
+          <p class="buy-note">Tu clave de licencia (guárdala, la necesitas para activar Apunto):</p>
+          <div class="buy-key-row">
+            <code id="buy-license-key"></code>
+            <button type="button" id="buy-copy" class="link-button">Copiar</button>
+          </div>
+          <p class="buy-note">Instala Apunto y pégala en <strong>Licencia → Ya tengo una licencia</strong>. Ahora sigue al pago:</p>
+          <a id="buy-continue" class="btn btn-primary" target="_blank" rel="noopener">Continuar al pago →</a>
+        </div>
       </div>
     </section>
 
@@ -287,5 +376,63 @@
       <p>Apunto — un servicio de MACOEM.</p>
     </footer>
   </div>
+
+  <script>
+    (() => {
+      const FUNCTIONS_URL = 'https://ptgfctusuwjefdtwjwau.functions.supabase.co';
+      const buyForm = document.getElementById('buy-form');
+      const buyEmail = document.getElementById('buy-email');
+      const buySubmit = document.getElementById('buy-submit');
+      const buyError = document.getElementById('buy-error');
+      const buySuccess = document.getElementById('buy-success');
+      const buyLicenseKey = document.getElementById('buy-license-key');
+      const buyCopy = document.getElementById('buy-copy');
+      const buyContinue = document.getElementById('buy-continue');
+
+      buyForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        buyError.classList.add('hidden');
+
+        const email = buyEmail.value.trim();
+        if (!email) return;
+
+        buySubmit.disabled = true;
+        buySubmit.textContent = 'Procesando…';
+
+        try {
+          const res = await fetch(`${FUNCTIONS_URL}/start-trial`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || !data.license_key) {
+            throw new Error(data.error || 'No se pudo procesar la compra.');
+          }
+
+          buyLicenseKey.textContent = data.license_key;
+          buyContinue.href = `${FUNCTIONS_URL}/checkout?license_key=${encodeURIComponent(data.license_key)}`;
+          buyForm.classList.add('hidden');
+          buySuccess.classList.remove('hidden');
+        } catch (err) {
+          buyError.textContent = err.message || 'No se pudo procesar la compra. Intenta de nuevo.';
+          buyError.classList.remove('hidden');
+        } finally {
+          buySubmit.disabled = false;
+          buySubmit.textContent = 'Comprar suscripción ahora';
+        }
+      });
+
+      buyCopy.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(buyLicenseKey.textContent);
+          buyCopy.textContent = 'Copiada ✓';
+          setTimeout(() => { buyCopy.textContent = 'Copiar'; }, 2000);
+        } catch {
+          // Si el navegador bloquea el portapapeles, la clave ya está visible en pantalla.
+        }
+      });
+    })();
+  </script>
 </body>
 </html>

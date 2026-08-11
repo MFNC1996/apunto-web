@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Apunto — Partituras sincronizadas con Holyrics</title>
+<meta name="description" content="Apunto sincroniza en tiempo real las partituras PDF de la canción activa en Holyrics con los celulares de los músicos, vía WiFi local." />
+<style>
+  :root {
+    --bg: #131215;
+    --bg-card: #1c1b1f;
+    --bg-card-raised: #221f24;
+    --border: #2e2b31;
+    --border-soft: #242226;
+    --text: #f2efe9;
+    --text-muted: #a29d97;
+    --text-faint: #6f6a68;
+    --accent: #e2a640;
+    --accent-hover: #eab55a;
+    --accent-ink: #241705;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 16px rgba(0, 0, 0, 0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: radial-gradient(120% 100% at 50% -10%, #1a171a 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--accent); }
+
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 64px 24px 96px;
+  }
+
+  header.hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+    margin-bottom: 56px;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-mark {
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 6px rgba(226, 166, 64, 0.35));
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .tagline {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    max-width: 480px;
+  }
+
+  .cta-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .btn {
+    font: inherit;
+    font-weight: 600;
+    font-size: 0.92rem;
+    border-radius: 10px;
+    padding: 11px 20px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  .btn-secondary {
+    background: var(--bg-card-raised);
+    color: var(--text);
+    border-color: var(--border);
+  }
+
+  section {
+    margin-bottom: 48px;
+  }
+
+  h2 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: var(--text);
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    padding: 20px 22px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .step {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 700;
+    font-size: 0.82rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .step p {
+    color: var(--text-muted);
+    font-size: 0.92rem;
+  }
+
+  .pricing-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .price {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .price small {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+
+  .pricing-note {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .legal-text {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .legal-text strong {
+    color: var(--text);
+  }
+
+  footer {
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 0.82rem;
+    margin-top: 64px;
+  }
+
+  footer a {
+    color: var(--text-faint);
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="hero">
+      <div class="logo-row">
+        <svg class="logo-mark" width="40" height="40" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect width="28" height="28" rx="8" fill="#e2a640" />
+          <path d="M11 8v9.2a3 3 0 1 0 1.5 2.6V11.9l5-1.1v6.4a3 3 0 1 0 1.5 2.6V8l-8 1.8V8Z" fill="#241705" />
+        </svg>
+        <h1>Apunto</h1>
+      </div>
+      <p class="tagline">Sincroniza en tiempo real las partituras y acordes (PDF) de la canción que se está tocando en el culto, mostrándolas automáticamente en los celulares de los músicos, conectado a Holyrics.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="mailto:contacto.macoem@gmail.com?subject=Quiero%20probar%20Apunto">Escríbenos para empezar</a>
+      </div>
+    </header>
+
+    <section>
+      <h2>Cómo funciona</h2>
+      <div class="card steps">
+        <div class="step">
+          <span class="step-num">1</span>
+          <p>Instalas Apunto en la PC donde corre Holyrics (Windows o Mac) y lo conectas con el <strong>API Server</strong> de Holyrics.</p>
+        </div>
+        <div class="step">
+          <span class="step-num">2</span>
+          <p>Copias los PDF de las canciones a una carpeta — Apunto reconoce el nombre de la canción automáticamente, con tolerancia a tildes y variaciones.</p>
+        </div>
+        <div class="step">
+          <span class="step-num">3</span>
+          <p>Los músicos escanean un código QR desde el celular (mismo WiFi) y les queda abierto en el navegador, sin instalar nada.</p>
+        </div>
+        <div class="step">
+          <span class="step-num">4</span>
+          <p>A medida que el operador avanza el setlist en Holyrics, la partitura correcta aparece sola en todos los celulares conectados.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Precio</h2>
+      <div class="card pricing-card">
+        <div class="price">$4.090 CLP <small>/ mes</small></div>
+        <p class="pricing-note">30 días de prueba gratis (1 celular conectado a la vez). Con la suscripción, dispositivos ilimitados. Renovación automática, cancela cuando quieras.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Términos y condiciones</h2>
+      <div class="card legal-text">
+        <p>Apunto es un servicio ofrecido por <strong>MACOEM</strong>. Al iniciar la prueba gratis o suscribirte, aceptas estos términos.</p>
+        <p><strong>Prueba gratis:</strong> 30 días sin costo, limitada a 1 celular de músico conectado a la vez. No se requiere método de pago para empezar.</p>
+        <p><strong>Suscripción:</strong> $4.090 CLP mensuales, cobrados de forma automática y recurrente a través de MercadoPago mientras la suscripción esté activa. Incluye dispositivos ilimitados conectados simultáneamente.</p>
+        <p><strong>Cancelación:</strong> puedes cancelar la renovación automática en cualquier momento desde tu cuenta de MercadoPago. La suscripción sigue activa hasta el final del período ya pagado.</p>
+        <p><strong>Modo offline:</strong> Apunto valida la licencia contra nuestros servidores cuando hay internet. Si se corta la conexión, la app sigue funcionando hasta 7 días con el último estado válido conocido.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Política de reembolso</h2>
+      <div class="card legal-text">
+        <p>Los pagos ya realizados <strong>no son reembolsables</strong>. Como la prueba gratis de 30 días permite probar Apunto completo antes de pagar, no ofrecemos devoluciones de meses ya cobrados una vez iniciada la suscripción.</p>
+        <p>Puedes cancelar la renovación automática en cualquier momento para que no se generen nuevos cobros — seguirás teniendo acceso hasta el final del período ya pagado.</p>
+        <p>Si detectas un cobro duplicado o un error de facturación de nuestra parte, escríbenos y lo resolvemos.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Contacto</h2>
+      <div class="card legal-text">
+        <p>¿Dudas, problemas técnicos, o quieres empezar a usar Apunto en tu iglesia?</p>
+        <p><a href="mailto:contacto.macoem@gmail.com">contacto.macoem@gmail.com</a></p>
+      </div>
+    </section>
+
+    <footer>
+      <p>Apunto — un servicio de MACOEM.</p>
+    </footer>
+  </div>
+</body>
+</html>

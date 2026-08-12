@@ -443,11 +443,23 @@
   }
 
   @media (max-width: 640px) {
+    .carousel {
+      margin: 0 -24px;
+    }
     .carousel-track {
-      padding: 4px 20px;
+      padding: 0;
+      gap: 0;
     }
     .slide {
-      width: min(calc(300px * var(--ar)), calc(100vw - 80px));
+      width: 100vw;
+      aspect-ratio: var(--ar);
+      border-radius: 0;
+      border-left: none;
+      border-right: none;
+      scroll-snap-align: start;
+    }
+    #video-slide {
+      --ar: 0.5625;
     }
     .carousel-arrow {
       display: none;
@@ -470,7 +482,7 @@
         <a class="btn btn-primary" href="https://github.com/MFNC1996/apunto-web/releases/download/v0.4.1/Apunto-arm64.dmg">Descargar para Mac</a>
         <a class="btn btn-primary" href="https://github.com/MFNC1996/apunto-web/releases/download/v0.4.1/Apunto-Setup.exe">Descargar para Windows</a>
       </div>
-      <p class="pricing-note">30 días de prueba gratis, sin tarjeta. ¿Tu Mac es de antes de 2021 (chip Intel)? <a href="https://github.com/MFNC1996/apunto-web/releases/download/v0.4.1/Apunto-x64.dmg">descarga la versión Intel</a>.</p>
+      <p class="pricing-note">15 días de prueba gratis, sin tarjeta. ¿Tu Mac es de antes de 2021 (chip Intel)? <a href="https://github.com/MFNC1996/apunto-web/releases/download/v0.4.1/Apunto-x64.dmg">descarga la versión Intel</a>.</p>
       <div class="cta-row">
         <a class="btn btn-secondary" href="mailto:contacto@apuntoapp.cl?subject=Quiero%20probar%20Apunto">Escríbenos si tienes dudas</a>
       </div>
@@ -484,9 +496,10 @@
         </div>
         <div class="carousel" id="carousel">
           <div class="carousel-track" id="carousel-track">
-            <div class="slide slide-video" style="--ar: 1.7778" data-caption="Apunto en 22 segundos: instalación, partituras y sincronización en vivo.">
-              <video id="showcase-video" playsinline preload="metadata" poster="assets/showcase/poster.webp">
-                <source src="assets/showcase/demo.mp4" type="video/mp4" />
+            <div class="slide slide-video" id="video-slide" style="--ar: 1.7778" data-caption="Apunto en 22 segundos: instalación, partituras y sincronización en vivo.">
+              <video id="showcase-video" playsinline preload="metadata" poster="assets/showcase/poster-16x9.webp">
+                <source src="assets/showcase/demo-9x16.mp4" type="video/mp4" media="(max-width: 640px)" />
+                <source src="assets/showcase/demo-16x9.mp4" type="video/mp4" />
               </video>
               <button class="slide-play" id="showcase-play" aria-label="Reproducir video">
                 <svg viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -554,7 +567,7 @@
       <h2>Precio</h2>
       <div class="card pricing-card">
         <div class="price">$4.990 CLP <small>/ mes</small></div>
-        <p class="pricing-note">30 días de prueba gratis (1 celular conectado a la vez). Con la suscripción, dispositivos ilimitados. Renovación automática, cancela cuando quieras.</p>
+        <p class="pricing-note">15 días de prueba gratis (1 celular conectado a la vez). Con la suscripción, dispositivos ilimitados. Renovación automática, cancela cuando quieras.</p>
         <form id="buy-form" class="buy-form">
           <input type="email" id="buy-email" placeholder="tu@email.com" required />
           <button type="submit" id="buy-submit" class="btn btn-primary">Comprar suscripción ahora</button>
@@ -567,7 +580,7 @@
       <h2>Términos y condiciones</h2>
       <div class="card legal-text">
         <p>Apunto es un servicio ofrecido por <strong>MACOEM</strong>. Al iniciar la prueba gratis o suscribirte, aceptas estos términos.</p>
-        <p><strong>Prueba gratis:</strong> 30 días sin costo, limitada a 1 celular de músico conectado a la vez. No se requiere método de pago para empezar.</p>
+        <p><strong>Prueba gratis:</strong> 15 días sin costo, limitada a 1 celular de músico conectado a la vez. No se requiere método de pago para empezar.</p>
         <p><strong>Suscripción:</strong> $4.990 CLP mensuales, cobrados de forma automática y recurrente a través de MercadoPago mientras la suscripción esté activa. Incluye dispositivos ilimitados conectados simultáneamente.</p>
         <p><strong>Cancelación:</strong> puedes cancelar la renovación automática en cualquier momento desde tu cuenta de MercadoPago. La suscripción sigue activa hasta el final del período ya pagado.</p>
         <p><strong>Modo offline:</strong> Apunto valida la licencia contra nuestros servidores cuando hay internet. Si se corta la conexión, la app sigue funcionando hasta 7 días con el último estado válido conocido.</p>
@@ -577,7 +590,7 @@
     <section>
       <h2>Política de reembolso</h2>
       <div class="card legal-text">
-        <p>Los pagos ya realizados <strong>no son reembolsables</strong>. Como la prueba gratis de 30 días permite probar Apunto completo antes de pagar, no ofrecemos devoluciones de meses ya cobrados una vez iniciada la suscripción.</p>
+        <p>Los pagos ya realizados <strong>no son reembolsables</strong>. Como la prueba gratis de 15 días permite probar Apunto completo antes de pagar, no ofrecemos devoluciones de meses ya cobrados una vez iniciada la suscripción.</p>
         <p>Puedes cancelar la renovación automática en cualquier momento para que no se generen nuevos cobros — seguirás teniendo acceso hasta el final del período ya pagado.</p>
         <p>Si detectas un cobro duplicado o un error de facturación de nuestra parte, escríbenos y lo resolvemos.</p>
       </div>
@@ -606,6 +619,13 @@
       const nextBtn = document.getElementById('carousel-next');
       const video = document.getElementById('showcase-video');
       const playBtn = document.getElementById('showcase-play');
+
+      const mobileQuery = window.matchMedia('(max-width: 640px)');
+      const updatePoster = () => {
+        video.poster = mobileQuery.matches ? 'assets/showcase/poster-9x16.webp' : 'assets/showcase/poster-16x9.webp';
+      };
+      updatePoster();
+      mobileQuery.addEventListener('change', updatePoster);
 
       slides.forEach((_, i) => {
         const dot = document.createElement('button');

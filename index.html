@@ -277,6 +277,182 @@
     color: var(--text-faint);
     text-decoration: underline;
   }
+
+  .showcase {
+    margin: 0 calc(50% - 50vw) 56px;
+    padding: 0 24px;
+  }
+
+  .showcase-inner {
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  .showcase-head {
+    max-width: 720px;
+    margin: 0 auto 20px;
+    text-align: center;
+  }
+
+  .showcase-eyebrow {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .showcase-head p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-top: 6px;
+  }
+
+  .carousel {
+    position: relative;
+  }
+
+  .carousel-track {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    padding: 4px 24px;
+    margin: 0 -4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .carousel-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .slide {
+    --ar: 1;
+    flex-shrink: 0;
+    scroll-snap-align: center;
+    width: min(calc(440px * var(--ar)), calc(100vw - 96px));
+    aspect-ratio: var(--ar);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-soft);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .slide img,
+  .slide video {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+  }
+
+  .slide-video {
+    position: relative;
+    background: #000;
+  }
+
+  .slide-play {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10, 9, 10, 0.28);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.15s ease;
+  }
+
+  .slide-play:hover {
+    background: rgba(10, 9, 10, 0.4);
+  }
+
+  .slide-play svg {
+    width: 68px;
+    height: 68px;
+    filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.5));
+  }
+
+  .slide-play.hidden {
+    display: none;
+  }
+
+  .carousel-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    margin-top: 18px;
+  }
+
+  .carousel-arrow {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg-card-raised);
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .carousel-arrow:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .carousel-dots {
+    display: flex;
+    gap: 8px;
+  }
+
+  .carousel-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--border);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+
+  .carousel-dot.active {
+    background: var(--accent);
+    transform: scale(1.3);
+  }
+
+  .carousel-caption {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    margin-top: 14px;
+    min-height: 1.4em;
+  }
+
+  @media (max-width: 640px) {
+    .carousel-track {
+      padding: 4px 20px;
+    }
+    .slide {
+      width: min(calc(300px * var(--ar)), calc(100vw - 80px));
+    }
+    .carousel-arrow {
+      display: none;
+    }
+  }
 </style>
 </head>
 <body>
@@ -299,6 +475,58 @@
         <a class="btn btn-secondary" href="mailto:contacto@apuntoapp.cl?subject=Quiero%20probar%20Apunto">Escríbenos si tienes dudas</a>
       </div>
     </header>
+
+    <section class="showcase">
+      <div class="showcase-inner">
+        <div class="showcase-head">
+          <div class="showcase-eyebrow">Así se ve funcionando</div>
+          <p>Un vistazo real: el panel de control, el celular del músico y la partitura sincronizándose sola.</p>
+        </div>
+        <div class="carousel" id="carousel">
+          <div class="carousel-track" id="carousel-track">
+            <div class="slide slide-video" style="--ar: 1.7778" data-caption="Apunto en 22 segundos: instalación, partituras y sincronización en vivo.">
+              <video id="showcase-video" playsinline preload="metadata" poster="assets/showcase/poster.webp">
+                <source src="assets/showcase/demo.mp4" type="video/mp4" />
+              </video>
+              <button class="slide-play" id="showcase-play" aria-label="Reproducir video">
+                <svg viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="34" cy="34" r="34" fill="#e2a640" />
+                  <path d="M27 21.5v25l20-12.5-20-12.5Z" fill="#241705" />
+                </svg>
+              </button>
+            </div>
+            <div class="slide" style="--ar: 0.5512" data-caption="Panel de control esperando que empiece la canción en Holyrics.">
+              <img src="assets/showcase/idle-desktop.webp" alt="Panel de Apunto en espera, sin canción activa" loading="lazy" />
+            </div>
+            <div class="slide" style="--ar: 0.5512" data-caption="Canción reconocida: la partitura queda lista y aparece el QR para los músicos.">
+              <img src="assets/showcase/song-desktop.webp" alt="Panel de Apunto con una canción sincronizada y código QR" loading="lazy" />
+            </div>
+            <div class="slide" style="--ar: 0.4621" data-caption="El celular del músico, esperando conexión con el mismo WiFi.">
+              <img src="assets/showcase/idle-phone.webp" alt="Celular esperando conexión con Apunto" loading="lazy" />
+            </div>
+            <div class="slide" style="--ar: 0.75" data-caption="La partitura correcta aparece sola en el celular, sin tocar nada.">
+              <img src="assets/showcase/song-phone.webp" alt="Celular mostrando la partitura sincronizada" loading="lazy" />
+            </div>
+            <div class="slide" style="--ar: 0.5512" data-caption="Estado de la licencia y la suscripción, siempre a la vista.">
+              <img src="assets/showcase/license-panel.webp" alt="Panel de licencia y suscripción de Apunto" loading="lazy" />
+            </div>
+            <div class="slide" style="--ar: 0.5512" data-caption="¿Dudas? Se escribe directo desde la app.">
+              <img src="assets/showcase/contact-panel.webp" alt="Panel de contacto dentro de Apunto" loading="lazy" />
+            </div>
+          </div>
+        </div>
+        <div class="carousel-nav">
+          <button class="carousel-arrow" id="carousel-prev" aria-label="Anterior">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3 5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="carousel-dots" id="carousel-dots"></div>
+          <button class="carousel-arrow" id="carousel-next" aria-label="Siguiente">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <p class="carousel-caption" id="carousel-caption"></p>
+      </div>
+    </section>
 
     <section>
       <h2>Cómo funciona</h2>
@@ -369,6 +597,63 @@
   </div>
 
   <script>
+    (() => {
+      const track = document.getElementById('carousel-track');
+      const slides = Array.from(track.children);
+      const dotsWrap = document.getElementById('carousel-dots');
+      const caption = document.getElementById('carousel-caption');
+      const prevBtn = document.getElementById('carousel-prev');
+      const nextBtn = document.getElementById('carousel-next');
+      const video = document.getElementById('showcase-video');
+      const playBtn = document.getElementById('showcase-play');
+
+      slides.forEach((_, i) => {
+        const dot = document.createElement('button');
+        dot.className = 'carousel-dot';
+        dot.setAttribute('aria-label', `Ir a la imagen ${i + 1}`);
+        dot.addEventListener('click', () => slides[i].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' }));
+        dotsWrap.appendChild(dot);
+      });
+      const dots = Array.from(dotsWrap.children);
+
+      let activeIndex = 0;
+      const setActive = (index) => {
+        activeIndex = index;
+        dots.forEach((d, i) => d.classList.toggle('active', i === index));
+        caption.textContent = slides[index].dataset.caption || '';
+      };
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+          if (visible) setActive(slides.indexOf(visible.target));
+        },
+        { root: track, threshold: [0.6] }
+      );
+      slides.forEach((s) => observer.observe(s));
+      setActive(0);
+
+      prevBtn.addEventListener('click', () => {
+        slides[Math.max(0, activeIndex - 1)].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      });
+      nextBtn.addEventListener('click', () => {
+        slides[Math.min(slides.length - 1, activeIndex + 1)].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      });
+
+      playBtn.addEventListener('click', () => {
+        playBtn.classList.add('hidden');
+        video.setAttribute('controls', '');
+        video.play();
+      });
+      video.addEventListener('pause', () => {
+        if (video.currentTime === 0 || video.ended) playBtn.classList.remove('hidden');
+      });
+      video.addEventListener('ended', () => {
+        playBtn.classList.remove('hidden');
+        video.removeAttribute('controls');
+      });
+    })();
+
     (() => {
       const FUNCTIONS_URL = 'https://ptgfctusuwjefdtwjwau.functions.supabase.co';
       const buyForm = document.getElementById('buy-form');

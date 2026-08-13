@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Panel — Apunto</title>
+<style>
+  :root {
+    --bg: #131215;
+    --bg-card: #1c1b1f;
+    --bg-input: #17161a;
+    --border: #2e2b31;
+    --text: #f2efe9;
+    --text-muted: #a29d97;
+    --text-faint: #6f6a68;
+    --accent: #e2a640;
+    --accent-ink: #241705;
+    --danger: #e2697a;
+    --success: #55b98a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: radial-gradient(120% 100% at 50% -10%, #1a171a 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    padding: 32px 20px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .logo { width: 34px; height: 34px; border-radius: 10px; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .logo svg { width: 19px; height: 19px; }
+  .brand h1 { font-size: 1.2rem; margin: 0; }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  }
+  .card h2 { font-size: 0.95rem; margin: 0 0 16px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 700; }
+
+  label { display: block; font-size: 0.85rem; color: var(--text-muted); margin: 14px 0 6px; }
+  label:first-child { margin-top: 0; }
+  input, textarea {
+    width: 100%; font: inherit; background: var(--bg-input); color: var(--text);
+    border: 1px solid var(--border); border-radius: 10px; padding: 11px 13px;
+  }
+  input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+  button {
+    font: inherit; font-weight: 700; cursor: pointer;
+    background: var(--accent); color: var(--accent-ink); border: none;
+    border-radius: 10px; padding: 12px 18px;
+  }
+  button:disabled { opacity: 0.6; cursor: default; }
+  button.secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .full { width: 100%; margin-top: 18px; }
+
+  .result {
+    margin-top: 16px; padding: 14px; border-radius: 10px;
+    background: var(--bg-input); border: 1px solid var(--border);
+    font-size: 0.88rem; white-space: pre-wrap; word-break: break-word;
+    display: none;
+  }
+  .result.show { display: block; }
+  .result.error { border-color: var(--danger); color: var(--danger); }
+  .result code { color: var(--accent); }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+  .stat { background: var(--bg-input); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center; }
+  .stat .n { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
+  .stat .l { font-size: 0.75rem; color: var(--text-faint); margin-top: 4px; }
+
+  .thanks-preview { display: flex; align-items: center; gap: 16px; }
+  .thanks-preview img { width: 100px; height: 100px; border-radius: 12px; border: 1px solid var(--border); }
+  .thanks-preview .info { flex: 1; font-size: 0.85rem; color: var(--text-muted); }
+
+  .note { font-size: 0.76rem; color: var(--text-faint); line-height: 1.4; margin-top: 4px; }
+
+  #gate { display: flex; align-items: center; justify-content: center; min-height: 60vh; }
+  #gate .card { width: 100%; max-width: 380px; }
+  #app { display: none; }
+  #app.show { display: flex; }
+</style>
+</head>
+<body>
+  <div id="gate">
+    <div class="card">
+      <div class="brand">
+        <div class="logo"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 8v9.2a3 3 0 1 0 1.5 2.6V11.9l5-1.1v6.4a3 3 0 1 0 1.5 2.6V8l-8 1.8V8Z" fill="#241705" /></svg></div>
+        <h1>Panel de Apunto</h1>
+      </div>
+      <label for="password">Clave de administrador</label>
+      <input type="password" id="password" placeholder="•••••••••••" autocomplete="off" />
+      <p id="gate-error" class="result error"></p>
+      <button id="btn-enter" class="full">Entrar</button>
+      <p class="note">La clave no queda guardada en este archivo — se pide cada vez que abres la pestaña.</p>
+    </div>
+  </div>
+
+  <div id="app" class="wrap">
+    <div class="brand">
+      <div class="logo"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11 8v9.2a3 3 0 1 0 1.5 2.6V11.9l5-1.1v6.4a3 3 0 1 0 1.5 2.6V8l-8 1.8V8Z" fill="#241705" /></svg></div>
+      <h1>Panel de Apunto</h1>
+    </div>
+
+    <div class="card">
+      <h2>Licencias</h2>
+      <div class="stat-grid" id="license-stats">
+        <div class="stat"><div class="n">…</div><div class="l">Total</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Descargas</h2>
+      <div class="stat-grid" id="download-stats">
+        <div class="stat"><div class="n">…</div><div class="l">Total</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Regalar licencia</h2>
+      <form id="form">
+        <label for="email">Email de la persona</label>
+        <input type="email" id="email" required placeholder="alguien@ejemplo.com" />
+        <label for="days">Días de prueba</label>
+        <input type="number" id="days" value="30" min="1" max="365" required />
+        <button type="submit" id="submit" class="full">Regalar licencia</button>
+      </form>
+      <div class="result" id="result"></div>
+      <p class="note">Le manda un correo automático con la clave y la imagen de agradecimiento adjunta.</p>
+    </div>
+
+    <div class="card">
+      <h2>Imagen de agradecimiento</h2>
+      <div class="thanks-preview">
+        <img src="https://apuntoapp.cl/assets/thanks.png" alt="Imagen de agradecimiento" />
+        <div class="info">
+          La misma que se manda por correo al regalar una licencia. Descárgala para enviarla tú directo por WhatsApp.
+        </div>
+      </div>
+      <button id="btn-download-thanks" class="secondary full">Descargar imagen</button>
+    </div>
+  </div>
+
+  <script>
+    const FUNCTIONS_BASE = 'https://ptgfctusuwjefdtwjwau.functions.supabase.co';
+    let ADMIN_SECRET = '';
+
+    const gate = document.getElementById('gate');
+    const app = document.getElementById('app');
+    const inputPassword = document.getElementById('password');
+    const gateError = document.getElementById('gate-error');
+    const btnEnter = document.getElementById('btn-enter');
+
+    async function tryEnter() {
+      const candidate = inputPassword.value.trim();
+      if (!candidate) return;
+
+      btnEnter.disabled = true;
+      btnEnter.textContent = 'Entrando…';
+      gateError.className = 'result error';
+      gateError.textContent = '';
+
+      try {
+        const res = await fetch(`${FUNCTIONS_BASE}/admin-stats`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ secret: candidate }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error('Clave incorrecta');
+
+        ADMIN_SECRET = candidate;
+        sessionStorage.setItem('apunto_admin_secret', candidate);
+        gate.style.display = 'none';
+        app.classList.add('show');
+        applyLicenseStats(data);
+        loadDownloadStats();
+      } catch (err) {
+        gateError.className = 'result error show';
+        gateError.textContent = '❌ ' + err.message;
+      } finally {
+        btnEnter.disabled = false;
+        btnEnter.textContent = 'Entrar';
+      }
+    }
+
+    btnEnter.addEventListener('click', tryEnter);
+    inputPassword.addEventListener('keydown', (e) => { if (e.key === 'Enter') tryEnter(); });
+
+    function applyLicenseStats(data) {
+      const grid = document.getElementById('license-stats');
+      const s = data.byStatus || {};
+      grid.innerHTML = `
+        <div class="stat"><div class="n">${data.total ?? 0}</div><div class="l">Total</div></div>
+        <div class="stat"><div class="n">${s.trial ?? 0}</div><div class="l">En prueba</div></div>
+        <div class="stat"><div class="n">${s.active ?? 0}</div><div class="l">Activas</div></div>
+        <div class="stat"><div class="n">${s.expired ?? 0}</div><div class="l">Vencidas</div></div>
+        <div class="stat"><div class="n">${data.last7Days ?? 0}</div><div class="l">Últimos 7 días</div></div>
+        <div class="stat"><div class="n">${data.last30Days ?? 0}</div><div class="l">Últimos 30 días</div></div>
+      `;
+    }
+
+    async function loadDownloadStats() {
+      const grid = document.getElementById('download-stats');
+      try {
+        const res = await fetch('https://api.github.com/repos/MFNC1996/apunto-web/releases');
+        const releases = await res.json();
+
+        let total = 0;
+        let latestTotal = 0;
+        const byPlatform = { mac: 0, windows: 0 };
+
+        releases.forEach((rel, idx) => {
+          let relTotal = 0;
+          for (const asset of rel.assets || []) {
+            total += asset.download_count;
+            relTotal += asset.download_count;
+            if (asset.name.endsWith('.exe')) byPlatform.windows += asset.download_count;
+            else if (asset.name.endsWith('.dmg')) byPlatform.mac += asset.download_count;
+          }
+          if (idx === 0) latestTotal = relTotal;
+        });
+
+        grid.innerHTML = `
+          <div class="stat"><div class="n">${total}</div><div class="l">Total (todas las versiones)</div></div>
+          <div class="stat"><div class="n">${latestTotal}</div><div class="l">Última versión (${releases[0]?.tag_name || '—'})</div></div>
+          <div class="stat"><div class="n">${byPlatform.mac}</div><div class="l">Mac (.dmg)</div></div>
+          <div class="stat"><div class="n">${byPlatform.windows}</div><div class="l">Windows (.exe)</div></div>
+        `;
+      } catch (err) {
+        grid.innerHTML = `<div class="stat"><div class="n">—</div><div class="l">No se pudo cargar</div></div>`;
+      }
+    }
+
+    const form = document.getElementById('form');
+    const submitBtn = document.getElementById('submit');
+    const result = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const days = Number(document.getElementById('days').value);
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Regalando…';
+      result.className = 'result show';
+      result.textContent = 'Un momento…';
+
+      try {
+        const res = await fetch(`${FUNCTIONS_BASE}/grant-license`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, days, secret: ADMIN_SECRET }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || 'Error desconocido');
+
+        result.className = 'result show';
+        result.innerHTML = `✅ Listo. Clave: <code>${data.license_key}</code>\nVence: ${new Date(data.trial_ends_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}\n\nYa le llegó un correo a ${data.email} con la clave y la imagen de agradecimiento.`;
+
+        const gateData = await fetch(`${FUNCTIONS_BASE}/admin-stats`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ secret: ADMIN_SECRET }),
+        }).then((r) => r.json());
+        applyLicenseStats(gateData);
+      } catch (err) {
+        result.className = 'result show error';
+        result.textContent = '❌ ' + err.message;
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Regalar licencia';
+      }
+    });
+
+    document.getElementById('btn-download-thanks').addEventListener('click', async () => {
+      const res = await fetch('https://apuntoapp.cl/assets/thanks.png');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'Apunto-gracias.png';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // Si ya se ingresó la clave en esta misma pestaña, no la vuelve a pedir.
+    const savedSecret = sessionStorage.getItem('apunto_admin_secret');
+    if (savedSecret) {
+      inputPassword.value = savedSecret;
+      tryEnter();
+    }
+  </script>
+</body>
+</html>

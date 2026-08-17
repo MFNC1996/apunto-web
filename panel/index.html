@@ -49,6 +49,15 @@
     border: 1px solid var(--border); border-radius: 10px; padding: 11px 13px;
   }
   input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+  .duration-group { display: flex; flex-direction: column; gap: 8px; }
+  .duration-option {
+    display: flex; align-items: center; gap: 10px;
+    margin: 0; font-size: 0.9rem; color: var(--text);
+    background: var(--bg-input); border: 1px solid var(--border);
+    border-radius: 10px; padding: 11px 13px; cursor: pointer;
+  }
+  .duration-option:has(input:checked) { border-color: var(--accent); }
+  .duration-option input { width: auto; accent-color: var(--accent); }
   button {
     font: inherit; font-weight: 700; cursor: pointer;
     background: var(--accent); color: var(--accent-ink); border: none;
@@ -123,14 +132,42 @@
     <div class="card">
       <h2>Regalar licencia</h2>
       <form id="form">
-        <label for="email">Email de la persona</label>
-        <input type="email" id="email" required placeholder="alguien@ejemplo.com" />
-        <label for="days">Días de prueba</label>
-        <input type="number" id="days" value="30" min="1" max="365" required />
+        <label for="email">Email de la persona (opcional)</label>
+        <input type="email" id="email" placeholder="alguien@ejemplo.com — déjalo vacío para solo generar la clave" />
+        <label>Duración</label>
+        <div class="duration-group">
+          <label class="duration-option">
+            <input type="radio" name="duration" value="30" checked />
+            <span>30 días</span>
+          </label>
+          <label class="duration-option">
+            <input type="radio" name="duration" value="60" />
+            <span>60 días</span>
+          </label>
+          <label class="duration-option">
+            <input type="radio" name="duration" value="90" />
+            <span>90 días</span>
+          </label>
+          <label class="duration-option">
+            <input type="radio" name="duration" value="lifetime" />
+            <span>Indefinido (de por vida)</span>
+          </label>
+        </div>
         <button type="submit" id="submit" class="full">Regalar licencia</button>
       </form>
       <div class="result" id="result"></div>
-      <p class="note">Le manda un correo automático con la clave y la imagen de agradecimiento adjunta.</p>
+      <p class="note">Si pones un email, le manda un correo automático con la clave y la imagen de agradecimiento. Si lo dejas vacío, solo se genera la clave para que se la pases tú.</p>
+    </div>
+
+    <div class="card">
+      <h2>Liberar equipo</h2>
+      <form id="form-reset">
+        <label for="reset-key">Clave de licencia</label>
+        <input type="text" id="reset-key" placeholder="APT-XXXXXXXX-XXXXXXXX" />
+        <button type="submit" id="submit-reset" class="full">Liberar equipo</button>
+      </form>
+      <div class="result" id="result-reset"></div>
+      <p class="note">Cada licencia queda atada al primer computador donde se activa. Úsalo cuando el cliente cambió de PC o reinstaló y necesita activarla de nuevo en otro equipo.</p>
     </div>
 
     <div class="card">
@@ -243,7 +280,8 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('email').value.trim();
-      const days = Number(document.getElementById('days').value);
+      const durationValue = document.querySelector('input[name="duration"]:checked').value;
+      const days = durationValue === 'lifetime' ? 'lifetime' : Number(durationValue);
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Regalando…';
@@ -254,13 +292,19 @@
         const res = await fetch(`${FUNCTIONS_BASE}/grant-license`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, days, secret: ADMIN_SECRET }),
+          body: JSON.stringify({ email: email || null, days, secret: ADMIN_SECRET }),
         });
         const data = await res.json();
         if (!res.ok || data.error) throw new Error(data.error || 'Error desconocido');
 
+        const venceText = data.trial_ends_at
+          ? `Vence: ${new Date(data.trial_ends_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}`
+          : 'No vence — licencia de por vida.';
+        const entregaText = data.email
+          ? `Ya le llegó un correo a ${data.email} con la clave y la imagen de agradecimiento.`
+          : 'No se mandó correo (no diste un email) — cópiale la clave tú mismo.';
         result.className = 'result show';
-        result.innerHTML = `✅ Listo. Clave: <code>${data.license_key}</code>\nVence: ${new Date(data.trial_ends_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}\n\nYa le llegó un correo a ${data.email} con la clave y la imagen de agradecimiento.`;
+        result.innerHTML = `✅ Listo. Clave: <code>${data.license_key}</code>\n${venceText}\n\n${entregaText}`;
 
         const gateData = await fetch(`${FUNCTIONS_BASE}/admin-stats`, {
           method: 'POST',
@@ -274,6 +318,40 @@
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Regalar licencia';
+      }
+    });
+
+    const formReset = document.getElementById('form-reset');
+    const submitResetBtn = document.getElementById('submit-reset');
+    const resultReset = document.getElementById('result-reset');
+
+    formReset.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const licenseKey = document.getElementById('reset-key').value.trim();
+      if (!licenseKey) return;
+
+      submitResetBtn.disabled = true;
+      submitResetBtn.textContent = 'Liberando…';
+      resultReset.className = 'result show';
+      resultReset.textContent = 'Un momento…';
+
+      try {
+        const res = await fetch(`${FUNCTIONS_BASE}/reset-machine`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ license_key: licenseKey, secret: ADMIN_SECRET }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || 'Error desconocido');
+
+        resultReset.className = 'result show';
+        resultReset.innerHTML = `✅ Listo. La clave <code>${data.license_key}</code> quedó libre — se puede activar en un equipo nuevo.`;
+      } catch (err) {
+        resultReset.className = 'result show error';
+        resultReset.textContent = '❌ ' + err.message;
+      } finally {
+        submitResetBtn.disabled = false;
+        submitResetBtn.textContent = 'Liberar equipo';
       }
     });
 

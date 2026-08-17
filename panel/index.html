@@ -88,7 +88,12 @@
 
   .note { font-size: 0.76rem; color: var(--text-faint); line-height: 1.4; margin-top: 4px; }
 
-  .license-table-wrap { overflow-x: auto; margin-bottom: 14px; }
+  .license-table-wrap { overflow: auto; margin-bottom: 14px; max-height: 420px; }
+  .license-table-wrap.hidden { display: none; }
+  .license-table-wrap thead th { position: sticky; top: 0; background: var(--bg-card); }
+  .license-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; user-select: none; }
+  .license-toggle .chevron { transition: transform 0.15s ease; color: var(--text-faint); flex-shrink: 0; }
+  .license-toggle.open .chevron { transform: rotate(180deg); }
   .license-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
   .license-table th {
     text-align: left; color: var(--text-faint); font-weight: 600; font-size: 0.7rem;
@@ -140,8 +145,12 @@
     </div>
 
     <div class="card">
-      <h2>Todas las licencias</h2>
-      <div class="license-table-wrap">
+      <div class="license-toggle" id="license-toggle">
+        <h2 style="margin:0;">Todas las licencias</h2>
+        <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <p class="note" id="license-table-note" style="margin-top: 10px;"></p>
+      <div class="license-table-wrap hidden" id="license-table-wrap">
         <table class="license-table">
           <thead>
             <tr><th>Email</th><th>Estado</th><th>Vence / restante</th><th>Clave</th></tr>
@@ -152,7 +161,6 @@
         </table>
       </div>
       <button id="btn-copy-emails" class="secondary full">Copiar todos los emails</button>
-      <p class="note" id="license-table-note"></p>
     </div>
 
     <div class="card">
@@ -325,7 +333,7 @@
       }).join('');
 
       const withEmail = allLicenses.filter((l) => l.email).length;
-      note.textContent = `${allLicenses.length} licencia${allLicenses.length === 1 ? '' : 's'} en total — ${withEmail} con email.`;
+      note.textContent = `${allLicenses.length} licencia${allLicenses.length === 1 ? '' : 's'} en total — ${withEmail} con email. Clic en el título para ver la lista.`;
     }
 
     document.getElementById('btn-copy-emails').addEventListener('click', async () => {
@@ -340,6 +348,13 @@
       const original = btn.textContent;
       btn.textContent = `Copiados ${emails.length} emails ✓`;
       setTimeout(() => { btn.textContent = original; }, 2000);
+    });
+
+    const licenseToggle = document.getElementById('license-toggle');
+    const licenseTableWrap = document.getElementById('license-table-wrap');
+    licenseToggle.addEventListener('click', () => {
+      const nowHidden = licenseTableWrap.classList.toggle('hidden');
+      licenseToggle.classList.toggle('open', !nowHidden);
     });
 
     async function loadDownloadStats() {

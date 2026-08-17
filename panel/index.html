@@ -88,6 +88,23 @@
 
   .note { font-size: 0.76rem; color: var(--text-faint); line-height: 1.4; margin-top: 4px; }
 
+  .license-table-wrap { overflow-x: auto; margin-bottom: 14px; }
+  .license-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .license-table th {
+    text-align: left; color: var(--text-faint); font-weight: 600; font-size: 0.7rem;
+    text-transform: uppercase; letter-spacing: 0.03em; padding: 8px 10px; border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .license-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .license-table tr:last-child td { border-bottom: none; }
+  .license-table code { font-size: 0.78rem; color: var(--text-muted); }
+  .no-email { color: var(--text-faint); font-style: italic; }
+  .badge { display: inline-block; padding: 3px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; white-space: nowrap; }
+  .badge-trial { background: rgba(226,166,64,0.15); color: var(--accent); }
+  .badge-active { background: rgba(85,185,138,0.15); color: var(--success); }
+  .badge-expired { background: rgba(226,105,122,0.15); color: var(--danger); }
+  .badge-cancelled { background: rgba(162,157,151,0.15); color: var(--text-muted); }
+
   #gate { display: flex; align-items: center; justify-content: center; min-height: 60vh; }
   #gate .card { width: 100%; max-width: 380px; }
   #app { display: none; }
@@ -120,6 +137,22 @@
       <div class="stat-grid" id="license-stats">
         <div class="stat"><div class="n">…</div><div class="l">Total</div></div>
       </div>
+    </div>
+
+    <div class="card">
+      <h2>Todas las licencias</h2>
+      <div class="license-table-wrap">
+        <table class="license-table">
+          <thead>
+            <tr><th>Email</th><th>Estado</th><th>Vence / restante</th><th>Clave</th></tr>
+          </thead>
+          <tbody id="license-table-body">
+            <tr><td colspan="4">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <button id="btn-copy-emails" class="secondary full">Copiar todos los emails</button>
+      <p class="note" id="license-table-note"></p>
     </div>
 
     <div class="card">
@@ -216,6 +249,7 @@
         app.classList.add('show');
         applyLicenseStats(data);
         loadDownloadStats();
+        loadLicenseList();
       } catch (err) {
         gateError.className = 'result error show';
         gateError.textContent = '❌ ' + err.message;
@@ -240,6 +274,73 @@
         <div class="stat"><div class="n">${data.last30Days ?? 0}</div><div class="l">Últimos 30 días</div></div>
       `;
     }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str ?? '';
+      return div.innerHTML;
+    }
+
+    let allLicenses = [];
+    const STATUS_LABEL = { trial: 'Prueba', active: 'Activa', expired: 'Vencida', cancelled: 'Cancelada' };
+
+    async function loadLicenseList() {
+      const tbody = document.getElementById('license-table-body');
+      try {
+        const res = await fetch(`${FUNCTIONS_BASE}/list-licenses`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ secret: ADMIN_SECRET }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || 'Error desconocido');
+
+        allLicenses = data.licenses || [];
+        renderLicenseTable();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="4">❌ ${escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    function renderLicenseTable() {
+      const tbody = document.getElementById('license-table-body');
+      const note = document.getElementById('license-table-note');
+
+      if (!allLicenses.length) {
+        tbody.innerHTML = `<tr><td colspan="4">Sin licencias todavía.</td></tr>`;
+        note.textContent = '';
+        return;
+      }
+
+      tbody.innerHTML = allLicenses.map((lic) => {
+        const badge = `<span class="badge badge-${lic.status}">${STATUS_LABEL[lic.status] || lic.status}</span>`;
+        let vence;
+        if (lic.status === 'expired') vence = 'Vencida';
+        else if (lic.status === 'cancelled') vence = '—';
+        else if (lic.is_lifetime) vence = 'De por vida';
+        else if (lic.days_left != null) vence = `${lic.days_left} día${lic.days_left === 1 ? '' : 's'}`;
+        else vence = '—';
+        const emailCell = lic.email ? escapeHtml(lic.email) : '<span class="no-email">sin email</span>';
+        return `<tr><td>${emailCell}</td><td>${badge}</td><td>${vence}</td><td><code>${escapeHtml(lic.license_key)}</code></td></tr>`;
+      }).join('');
+
+      const withEmail = allLicenses.filter((l) => l.email).length;
+      note.textContent = `${allLicenses.length} licencia${allLicenses.length === 1 ? '' : 's'} en total — ${withEmail} con email.`;
+    }
+
+    document.getElementById('btn-copy-emails').addEventListener('click', async () => {
+      const emails = [...new Set(allLicenses.map((l) => l.email).filter(Boolean))];
+      const btn = document.getElementById('btn-copy-emails');
+      if (!emails.length) {
+        btn.textContent = 'No hay emails para copiar';
+        setTimeout(() => { btn.textContent = 'Copiar todos los emails'; }, 2000);
+        return;
+      }
+      await navigator.clipboard.writeText(emails.join('\n'));
+      const original = btn.textContent;
+      btn.textContent = `Copiados ${emails.length} emails ✓`;
+      setTimeout(() => { btn.textContent = original; }, 2000);
+    });
 
     async function loadDownloadStats() {
       const grid = document.getElementById('download-stats');
@@ -312,6 +413,7 @@
           body: JSON.stringify({ secret: ADMIN_SECRET }),
         }).then((r) => r.json());
         applyLicenseStats(gateData);
+        loadLicenseList();
       } catch (err) {
         result.className = 'result show error';
         result.textContent = '❌ ' + err.message;

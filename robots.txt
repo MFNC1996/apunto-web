@@ -1,2 +1,4 @@
 User-agent: *
 Disallow: /panel/
+
+Sitemap: https://apuntoapp.cl/sitemap.xml
